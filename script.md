@@ -12,7 +12,7 @@ and then you go to the repo I shared rust-intro and then you click on the `start
 
 If you want to have rust environment on your local computer then the way to go is using the rustup.rs website and install following the instructions there.
 
-## ENvironment
+## Environment
 
 If you are using one of those web based environments you have a code editor similar to vscode, when running locally you can use any editor of choice some provides better rust support, vscode being the recommended and also Neovim has a good support and I particularly like to use an editor called micro-editor, which I will be using today.
 
@@ -21,7 +21,11 @@ If you are using one of those web based environments you have a code editor simi
 To get started lets open a file called `hello.rs` and write the
 traditional hello world program.
 
-[hello.rs]
+```rust
+fn main() {
+    println!("Hello, world!");
+}
+```
 
 So some things to note:
 - Rust source code has the extension .rs
@@ -50,7 +54,9 @@ Now lets open our `hello-world/src/main.rs` and start looking on how Rust variab
 
 Cleanup all the contents and try to bind the number 5 to a variable called x. `let x = 5;`
 
-[error]
+```console
+expected item found keyword
+```
 
 The rust compiler is very famous because of the error messages it gives, in most of the cases the message will tell you exactly what to do, in this case it is saying that the `let` statement cannot be used in the global scope of the program, and this is related to how Rust manages memory, lets talk about it.
 
@@ -59,7 +65,8 @@ The rust compiler is very famous because of the error messages it gives, in most
 To avoid memory leaking the program must gree all the space used in memory, there are languages where you need to manually manage it by calling `delete x` for example, and on the other hand there are languages where there is a Garbage Collector, a procedure that run from time to time and cleans up unused values from the memory.
 
 Rust takes a different approach knows as RAII, this is a pattern that has been created on the C++ community and is integrated in the Rust typing system, so Rust needs to know where the variable has been acquired so it knows where the variable needs to be cleaned from the memory, this is related to a thing called OBRM that is an extension over the RAII pattern, lets see how it works.
-```
+
+```rust
 fn main() {
 	// First, let statement can be used only inside the function
 	// scopt
@@ -79,7 +86,7 @@ Executing this simple program will give us warnings in the console
 those warnings will not block the compilation, but is highly recommended to read it because compiler will try to teach you
 what to do to make your program better.
 
-[warning]
+[warning] `unused variable x`
 
 
 ## Type inference
@@ -93,7 +100,7 @@ context where we define it, in this case the parser will detect that the 5 liter
 
 We can print to stdout using println! which is a macro, similar to function in the usage but does pre-compilation magic for us.
 
-```
+```rust
 println!("Hello");
 println!("{x}"); // variable lookup
 println!("{}", x); // template substitution
@@ -105,7 +112,7 @@ dbg!(x); // print for debugging
 
 So lets say we have this simple code
 
-```
+```rust
 let x = 5;
 println!("{x}");
 
@@ -140,7 +147,7 @@ When we use let keyword we are allocating the value in the memory, from the scra
 However, Rust allows us to do variable shadowing, which is, creating a new variable with the same name and pushing this variable to the top of the stack memory so when we use `x` we will be using the new one,
 so we just need to change this example adding a `let` before the mutation.
 
-```
+```rust
 let mut x: i8 = 5;
 println!("{x}");
 let x = "Data Umbrella";  // `let` here shadows previous variable
@@ -172,7 +179,7 @@ The inner scope can be also made by a function or a closure.
 ## Constants
 
 There is one kind of variable that can be declared on the global scope, it is used to hold values that never changes during the runtime.
-```
+```rust
 const SECONDS_IN_MINUTE: u16 = 60;
 ```
 
@@ -182,7 +189,7 @@ const SECONDS_IN_MINUTE: u16 = 60;
 - We can assign only once (no shadowing)
 - It is written using UPPER_SNAKE_CASE style
 
-```
+```rust
 let minutes = 5; // from dynamic input
 let total = minutes * SECONDS_IN_MINUTE;
 println!("there are {total} seconds in {minutes} minutes");
@@ -219,29 +226,35 @@ Lets take a look on some details of it.
 
 #### signed
 range:  -(2ⁿ⁻¹) até 2ⁿ⁻¹ - 1
+
 i8: -128 até 127  [-(2⁷) até 2⁷ - 1]
 
 #### unsigned
 range: 0 até 2ⁿ - 1
+
 u8: 0 até 255 [0 até 2⁸ -1]
 
 #### Inference
 
-let x = 5;  // inferred i32
+`let x = 5;  // inferred i32`
 
 #### Typing
 
+```rust
 let x: u8 = 10;
 let x: 10_u8;
+```
 
 #### Overflow
 
 If we try to assign a value that overflows the defined type Rust compiler will
 detect during compilation and dont allow us to fo the operation.
 
+```rust
 let x: u8 = 10;
 let y: u8 = x - 20;
             ^^^^^^ attempt to compute `10_u8 - 20_u8`, which would overflow
+```
 
 #### Literals
 
@@ -260,7 +273,7 @@ Tuples are the basic compound type for us to aggregate multiple values in a sing
 - can store different types
 - HAs a fixed size
 
-```
+```rust
 let tup = (1, 3, 3);
 // type defined by structure
 let tup: (i32, i32, i32) = (1, 2, 3);
@@ -271,7 +284,7 @@ tup.1, tup.2, tup.3
 
 All rust assignments are based on pattern match, so the left side reprensets a pattern that right side must match, this works this way for every assignment, but on tuples we can use it to do destructuring which is very useful.
 
-```
+```rust
 let (a, b, c) = tup
 ```
 
@@ -279,7 +292,7 @@ let (a, b, c) = tup
 
 Array is a sequence of elements of the same type.
 
-```
+```rust
 let array: [i32;4] = [1, 2, 3, 4];
 array[0]
 &array[1..];
@@ -287,7 +300,9 @@ array[0]
 
 ## Memory
 
-Stack HEap Static...
+### Static, Stack, Heap
+
+![memory](3.png)
 
 ## Strings
 
@@ -295,7 +310,7 @@ In Rust there are 3 types to define text values, we already seem one
 the `char` which stores a 4 byte codepoint to the unicode table, and it
 must be defined inside single quotes.
 
-```
+```rust
 let a = 'a';
 let smile = '😃';
 ```
@@ -308,7 +323,7 @@ Rust has 2 types of string, and this is sometimes confusing when you are startin
 
 The first type is called String Literal, which is defined when we create a string literally by enclosing it in double quotes.
 
-```
+```rust
 let name = "Bruno";
 // Rust internally will store this in the static memory region
 // and as we don't have a pointer with a defined size for that memory
@@ -324,21 +339,21 @@ The other type is the Dynamic String, which is defined by the `String` type (cap
 
 The most common way to create a string like this is by doing.
 
-```
+```rust
 let name = "Bruno".to_string();
 // inference will be name: String
 ```
 
 There are other ways for achieving the same.
 
-```
+```rust
 String::new() // empty
 String::from("Bruno") // Same as "Bruno".to_string()
 ```
 
 This kind of string is useful when we want to read input from the user.
 
-```
+```rust
 let mut name = String::new();  // static method call
 name.push_str("Hello");
 name.push_str(" ");
@@ -348,7 +363,7 @@ println!("{name}");
 
 Notes on size
 
-```
+```rust
 let symbols = "🦀😃";
 println!("{}", symbols.len());  // 8
 println!("{}", symbols.chars().count()); // 2
@@ -369,7 +384,7 @@ Lets edit the `src/main.rs` file and start organizing our program using function
 The goal of the program is to read user input from the console so lets add
 a `read_user_input` function that accepts an argument `s` of type String.
 
-```
+```rust
 /// Read console input and add the text to the `s` string
 fn read_user_input(s: String) {
     // TODO: read console and add to the s string
@@ -385,7 +400,7 @@ Using `cargo doc --open` we can see the generated documentation on the browser.
 Now lets change our `main` function and add more code, our program is a guessing game, we gonna generate a random number and user will try to guess
 by typing on the console.
 
-```
+```rust
 fn main() {
     println!("Type a number:");     // Ask the user to type
     let guess = String::new();      // start an empty String
@@ -416,7 +431,7 @@ however we can give the value as an explicit borrow instead of giving ownership.
 we can do that by simply addiing & on the function argument and in the
 function calling.
 
-```
+```rust
 fn read_user_input(s: &String)  // receives a borrow
 ...
 read_user_input(&guess);     // passes a borrowed / reference
@@ -432,7 +447,7 @@ Lets read user input
 
 To read user input we gonna use the std lib module `io`
 
-```
+```rust
 // at the top
 use std::io;
 
@@ -453,7 +468,7 @@ You remember that every variable in Rust is immutable, so we need to manually
 specify that we want it to be mutable not only on its definition by also
 on every place it is referenced.
 
-```
+```rust
 fn read_user_input(s: &mut String)
 let mut guess = String::new();
 read_user_input(&mut guess);
@@ -461,7 +476,7 @@ read_user_input(&mut guess);
 
 There are still warnings to be resolved but the code now works
 
-```
+```rust
 Guess the Number
 > 55
 You guessed 55
@@ -481,7 +496,7 @@ Lets make our Function more rustic in some refactorings.
 1. first we declare a return type that is an `io::Result` which will
 contain the size in bytes that has been read from the terminal.
 
-```
+```rust
 fn read_user_input(s: &mut String) -> io::Result<usize> {
     let input = io::stdin();
     return input.read_line(s); // unneeded
@@ -498,7 +513,7 @@ saying that we are taking a Result that may/or not have an error
 and we are not doing anything with it, we must threat the possible
 error.
 
-```
+```rust
 fn read_user_input(s: &mut String) -> io::Result<usize> {
     let input = io::stdin();
     input.read_line(s)
@@ -526,13 +541,13 @@ It is very common in Rust to use another FP style called **combinators** a.k.a C
 So lets rewrite the `main` function, we don't need to allocate memory for `result` as we can directly call `.expect` on its `Return`
 
 
-```
+```rust
 read_user_input(&mut guess).expect("Error happened");
 ```
 
 Now lets check the `read_user_input` function
 
-```
+```rust
 fn read_user_input(s: &mut String) -> io::Result<usize> {
     io::stdin().read_line(s)
 }
@@ -542,7 +557,7 @@ As you can see, this function is a one-liner, we can instead of using it
 call the stdin directly in the main function, but now you know how functions
 works, our whole code is now:
 
-```
+```rust
 use std::io;
 
 fn main() {
@@ -561,14 +576,14 @@ Now lets make the program to work as intended, lets generate a random number
 for doing that we need to install a `crate` (that is how we call rust modules)
 the crate is called `rand` so we edit `Cargo.toml`
 
-```
+```toml
 [dependencies]
 rand = "0.8.3"
 ```
 
 And now we go to our code and generate a random number from 1 to 100.
 
-```
+```rust
 use rand::Rng;
 
 fn main() {
@@ -580,7 +595,7 @@ fn main() {
 
 On the next `cargo run` Rust will install the needed `rand` dependency.
 
-```
+```rust
 	Compiling rand v0.8.5
 	...
 Guess the Number
@@ -598,7 +613,7 @@ Rust supports all the common comparison operations, lets check.
 
 https://play.rust-lang.org
 
-```
+```rust
 let x = 5;
 let y = 10;
 
@@ -612,7 +627,7 @@ println!("{}", x != y); // Not Equal
 
 We can use this operators in an `if` statement:
 
-```
+```rust
 if x < y {
 	println!("x is lower");
 }
@@ -634,14 +649,14 @@ way.
 2. call `parse` method so rust can infer its type
 3. be aware of errors that might happen
 
-```
+```rust
 // after stdin...
 let guess: u32 = guess.trim().parse().expect("Invalid Number");
 ```
 
 Now lets use the conditionals.
 
-```
+```rust
  let guess: u32 = guess.trim().parse().expect("Invalid Number");
 println!("You guessed {guess}");
 if number > guess {
@@ -654,7 +669,7 @@ if number > guess {
 
 ```
 
-```
+```console
 Guess the Number
 The secret number is: 48
 45
@@ -677,7 +692,7 @@ write our logic using pattern matching expression instead of if-else.
 2. We build pattern match on the `guess` variable because the `std::cmp`
    brings into scope the `Ordering` trait, we now can call `.cmp` method on numbers.
 
-```
+```rust
 use std::cmp::Ordering;  // NEW
 
 // NEW
@@ -693,7 +708,7 @@ match guess.cmp(&number) {
 Lets allow the user to try again in case of failure by using a `loop` statement, and we can break the loop in the case when the user guesses
 right.
 
-```
+```rust
 fn main() {
     println!("Guess the Number");
     let number = rand::thread_rng().gen_range(1..=100);
@@ -722,7 +737,7 @@ fn main() {
 
 What happens if user types an invalid number?
 
-```
+```console
 Guess the Number
 The secret number is: 23
 banana
@@ -732,7 +747,7 @@ note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
 
 It panicked on the line 14
 
-```
+```rust
 let guess: u32 = guess.trim().parse().expect("Invalid Number");
 ```
 
@@ -759,7 +774,8 @@ let guess: u32 = match guess.trim().parse() {
 ## A real guessing game
 
 Remove the line
-```
+
+```rust
 // println!("The secret number is: {number}");
 ```
 
@@ -772,7 +788,8 @@ Play
 - cargo watch (cargo watch -x run)
 - irust
 - Struct
-```
+
+```rust
 struct Animal {
     name: String,
     colors: Vec<String>
