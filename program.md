@@ -344,12 +344,12 @@ have its value known at compilation time.
 - Do not allow reassignment
 
 ```rust
-const SECONDS_IN_HOURS: u16 = 60;
+const SECONDS_IN_MINUTE: u16 = 60;
 
 fn main() {
-    let hours = 24; // from dynamic input
-    let total = hours * SECONDS_IN_HOURS;
-    println!("there are {total} seconds in {hours} hours");
+    let minutes = 5; // from dynamic input
+    let total = minutes * SECONDS_IN_MINUTE;
+    println!("there are {total} seconds in {minutes} minutes");
 }
 ```
 
@@ -468,7 +468,7 @@ let mut array: [i32; 4] = [1, 2, 3, 4];
 array[0] = 99;
 ```
 
-## Stack, heap
+## Memory management
 
 There are 3 regions on a program's RAM memory
 
@@ -605,13 +605,334 @@ Other ways to initialize a dynamic string
 - `String::new()`
 - `String::from("text")`
 
+## Functions, Ownership and Borrowing
+
+> TODO!!!
+
+> Notice that unbound members are called with `::` (static methods, modules, variables)> while bound members (instance methods and attributes) are called with `.`
+
+## Custom types
+
+Structs, Enums and Traits are the main constructions that Rust offers for us
+to build our custom types.
+
+### Struct
+
+> TODO!!!
+
+### Enum
+
+> TODO!!!
+
+### Trait
+
+> TODO!!!
 
 ## Console Input
 
+Lets create a program that reads user input from the console.
+
+```bash
+cargo new guess_game
+```
+
+Start by bringing `std::io` module into scope.
+
+Then we need to create a mutable String to store the value coming
+from the console. `let mut guess = String::new();` as we don't know how many
+letters user will write we need to allocate a dynamic string in the heap.
+
+Now lets call the `io::stdin` method which returns an `Stdin` struct instance
+where we can call the `read_line` method passing a reference to the mutable
+string we created before.
+
+The complete program must be:
+
+```rust
+use std::io;
+
+fn main() {
+    println!("Guess the Number");
+    let mut guess = String::new();
+
+    io::stdin()
+        .read_line(&mut guess)
+        .expect("Failed to read line");
+
+    println!("You guessed: {guess}");
+}
+```
+
+Also notice that we used a functional programming style called `combinators`
+or a.k.a `chained methods`  stdin().read_line(...).expect(...)
+
+Also note the `.expect` at the end of the sentence, this is one of the ways we
+deal with errors in Rust, if for some reason we are unable to read the input
+the text on the .expect will be printed to the stderr when program panics.
+
+## Dependencies
+
+Now lets make this program a bit more interesting by actually generating a random
+number so the user have to guess.
+
+Edit the `Cargo.toml` and add under the `[dependencies]` section the crate
+`rand = "0.8.3"`
+
+```toml
+[dependencies]
+rand = "0.8.3"
+```
+
+When saving, cargo will download the dependency and install it, making it
+available to the project scope, it might take some time to download the crate
+on the first time. (after cargo will create a cache)
+
+```bash
+Updating crates.io index
+Compiling rand v0.8.5
+```
+
+> Note: `cargo doc --open` to see the docs
+
+Now lets add some random generatino to our guessing game by bringing `Rng` trait
+into scope `use rand::Rng;` and then using it to generate a random number,
+this trait exposes `thread_rng` method that return a Randon Number Generator and
+then we ask a number within a range passing a range expression `start..=end`
+
+```rust
+use std::io;
+use rand::Rng;
+
+fn main() {
+    println!("Guess the Number");
+
+    let number = rand::thread_rng().gen_range(1..=100);
+    println!("The secret number is: {number}");
 
 
-## Operations and Type Casting
-## Control Flow
-## Functions and Borrowing
-## Custom Types
-## A CLI Program
+    let mut guess = String::new();
+    io::stdin()
+        .read_line(&mut guess)
+        .expect("Failed to read line");
+
+    println!("You guessed: {guess}");
+}
+```
+
+## Operations
+
+Now that we have a secret number and the data user typed on the console
+we can compare to check if the user was able to guess, however the data
+typed to the console is read in to a `String` while the secret random number
+is stored in an `u32` variable so we need to perform type casting as rust
+will not do it automatically for us.
+
+Lets see how it works in Rust, open https://play.rust-lang.org to play
+
+All the basic comparison operations works very similar to other languages:
+
+```rust
+let x = 5;
+let y = 10;
+
+println!("{}", x == y); // Equal
+println!("{}", x > y);  // Greater
+println!("{}", x < y);  // Less
+println!("{}", x <= y); // Less or Equal
+println!("{}", x >= y); // Greater or Equal
+println!("{}", x != y); // Not Equal
+```
+
+All those operations returns a boolean value so we can use on control flow
+such as `if` statements.
+
+## Type Casting
+
+Lets simulate our guessing game application on play.rust-lang.org and try
+to use the comparison operations on an `if` block.
+
+```rust
+fn main() {
+    let number = 44;
+    let guess = String::from("35");
+
+    if number > guess {
+        println!("Too low!");
+    } else if number < guess {
+        println!("Too High!")
+    } else {
+        println!("Congratulations");
+    }
+}
+```
+
+We gonna see an error:
+
+```console
+error[E0277]: can't compare `{integer}` with `String`
+ --> src/main.rs:5:15
+  |
+5 |     if number > guess {
+  |               ^ no implementation for `{integer} < String` and `{integer} > String`
+```
+
+It is not possible to compare an integer with a String so we need to perform
+the casting, there are multiple ways to achieve that, we are going to use the easiest
+way.
+
+1. Trim the string to remove unwanted spaces
+2. call `parse` method so rust can infer its type
+3. be aware of errors that might happen
+
+```rust
+fn main() {
+    let number = 44;
+    let guess = String::from("35");
+
+    let guess: u32 = guess.trim().parse().expect("invalid number!");
+
+    if number > guess {
+        println!("Too low!");
+    } else if number < guess {
+        println!("Too High!")
+    } else {
+        println!("Congratulations");
+    }
+}
+```
+
+## Match
+
+We have seem the Control flow using `if` `else if` and `else` statements,
+now lets use a different control flow approach, lets edit our program and
+write our logic using pattern matching instead of if-else.
+
+1. First we need the `std::cmp::Ordering` enum into scope, this enum has
+   3 variants `Less, Greater, Equal`
+2. We need to parse user input as an u32 number
+3. We build pattern match on the `guess` variable because the `std::cmp` brings
+   into scope the `Ordering` trait, we now can call `.cmp` method on numbers.
+
+```rust
+use std::io;
+use rand::Rng;
+use std::cmp::Ordering;  // NEW
+
+
+fn main() {
+    println!("Guess the Number");
+
+    let number = rand::thread_rng().gen_range(1..=100);
+    println!("The secret number is: {number}");
+
+    let mut guess = String::new();
+    io::stdin()
+        .read_line(&mut guess)
+        .expect("Failed to read line");
+
+    let guess: u32 = guess.trim().parse().expect("Invalid number!");  // NEW
+
+    println!("You guessed: {guess}");
+
+    // NEW
+    match guess.cmp(&number) {
+        Ordering::Less => println!("Too small!"),
+        Ordering::Greater => println!("Too big!"),
+        Ordering::Equal => println!("Congratulations!"),
+    }
+}
+
+```
+
+### Loop
+
+Lets allow the user to try again in case of failure using a `loop` statement
+
+```rust
+use std::io;
+use rand::Rng;
+use std::cmp::Ordering;
+
+fn main() {
+
+    println!("Guess the Number");
+
+    let number = rand::thread_rng().gen_range(1..=100);
+    println!("The secret number is: {number}");
+
+    loop {  // infinite loop
+        let mut guess = String::new();
+        io::stdin()
+            .read_line(&mut guess)
+            .expect("Failed to read line");
+
+        let guess: u32 = guess.trim().parse().expect("Invalid number!");
+
+        println!("You guessed: {guess}");
+
+        match guess.cmp(&number) {
+            Ordering::Less => println!("Too small!"),
+            Ordering::Greater => println!("Too big!"),
+            Ordering::Equal => {
+                println!("Congratulations!");
+                break;  // stop condition
+            }
+        }
+    }
+}
+
+```
+
+> Notice that we can have an entire block as expression of a match variation.
+
+## Handling Errors
+
+What happens if the user types invalid numbers?
+
+```console
+Guess the Number
+The secret number is: 66
+> banana
+```
+```rust
+thread 'main' panicked at 'Invalid number!: ParseIntError { kind: InvalidDigit }', src/main.rs:18:47
+```
+
+We can handle those errors and allow user to try again, Rust doesn´t have
+null values, also Rust doesn't have exception handling, the approach taken
+is to use `sum types` (also known as Monadics types) to handle possible returns.
+
+When we call
+
+```rust
+let guess: u32 = guess.trim().parse();
+```
+
+Rust returns a `Result` type, which is an enum that has 2 possible values: `Ok` and
+`Err`, if the value is wrapped inside `Ok` it means no error happened and we can
+`unwrap` the value to use it, if the variante is an `Err` then we use control flow
+to take another path in our code.
+
+Another interesting feature of rust is that almost everything is a valid
+expression that can be used with the `let` statement, so we can use let to
+assingn the results of a `match`, `if` or even a `while` loop.
+
+Lets put this all together to handle the error, inside the loop we will make the change:
+
+Instead of
+
+```rust
+let guess: u32 = guess.trim().parse().expect("Invalid number!");
+```
+
+we do
+
+```rust
+let guess: u32 = match guess.trim().parse() {
+    Ok(num) => num,  // unwrap the value
+    Err(_) => {
+       println!("Invalid Number");
+       continue;  // restart the loop
+    }
+};
+```
