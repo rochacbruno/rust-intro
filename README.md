@@ -26,16 +26,20 @@ to install anything locally.
 
 ### A complete environment on your browser
 
-Gitpod offers a complete environment in your browser with a full featured IDE (VsCOde online) and a terminal to execute Cargo commands.
+#### Gitpod *recommended*
+
+Gitpod offers a complete environment in your browser with a full featured IDE (VSCode online) and a terminal to execute Cargo commands.
 
 Sign-in on https://gitpod.io/ using your github account and then go to https://gitpod.io/#https://github.com/rochacbruno/rust-intro/
 
-Replit.com also offers a complete environment with terminal and IDE.
 
+#### Replit
+
+https://Replit.com also offers a complete environment with terminal and IDE.
 
 ## Program
 
-1. How to isntall
+1. How to install
 2. Dev environment
 3. How to write and compile your first program
 4. Cargo and project
@@ -46,6 +50,4 @@ Replit.com also offers a complete environment with terminal and IDE.
 8. Operations and Type Casting
 9. Control Flow
 10. Functions and borrowing
-11. Custom Types
-12. A CLI program
-
+11. A CLI program
