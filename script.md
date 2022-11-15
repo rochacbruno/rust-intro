@@ -1,10 +1,12 @@
 ## intro
-Hello and thank you all for coming my name is Bruno I am a Senior Engineer on Ansible by Red Hat, I work mainly with Python but I have been exploring Rust for the past 5 years or so.
+
+My name is Bruno I am a Senior Engineer on Ansible by Red Hat, I work mainly with Python but I have been exploring Rust for the past 5 years or so.
 
 So my goal today is to give you an introdution to the foundations od the Rust language.
 
 ## install
-To get started you need an environment where you can compile your rust program, the first and easy option is to use an online solutio
+
+To get started you need an environment where you can compile your rust program, the first and easy option is to use an online solution
 like replit.com or gitpod.io.
 
 I recommend using gitpod so you don't need to install anything locally you just need a github account then you signin to gitpod io
@@ -28,11 +30,17 @@ fn main() {
 ```
 
 So some things to note:
-- Rust source code has the extension .rs
-- The entry point for binary program is the main function
-- We use println! macro to print to the console
+
+- Rust source code has the extension `.rs`
+- The entry point for binary program is the `main` function
+- We use `println!` macro to print to the console
 
 Now open a second terminal and run `rustc hello.rs` and the compiler will generate a binary with the same name and we can run it `./hello` on any computer based on the same architecture.
+
+```console
+$ ./hello
+Hello, world!
+```
 
 As Rust is a compiled language every time you do changes on the source code, you need to compile again.
 
@@ -40,11 +48,11 @@ As Rust is a compiled language every time you do changes on the source code, you
 
 Lerger projects will be based on more than a single file, and to manage the collection of modules and dependencies Rust comes with a tool called `Cargo`, you can run `cargo new hello-world` and it creates the basic project structure which is very simple.
 
-It is a file called Cargo.toml to hold all the metadata and dependency list for the project + a folder called src containg a main.rs file.
+It has a file called `Cargo.toml` to hold all the metadata and dependency list for the project and a folder called `src` containg a `main.rs` file.
 
-So in a binary project this src/main.rs is the entry point when we want to run the program, open it on the editor and you can see that this file comes with the simple hello world.
+So in a binary project this `src/main.rs` is the entry point, open it on the editor and you can see that this file comes with the simple hello world.
 
-When inside a folder containing a Cargo.toml, we say we are in a Rust Workspace and there we can run `cargo run` to compile and execute de project.
+When inside a folder containing a `Cargo.toml`  we say we are in a Rust Workspace and there we can run `cargo run` to compile and execute de project.
 
 Cargo provides other utilities and it can be extended via plugins so we can use cargo for all administrative tasks on our project.
 
@@ -56,49 +64,62 @@ Cleanup all the contents and try to bind the number 5 to a variable called x. `l
 
 ```console
 expected item found keyword
+...
 ```
 
-The rust compiler is very famous because of the error messages it gives, in most of the cases the message will tell you exactly what to do, in this case it is saying that the `let` statement cannot be used in the global scope of the program, and this is related to how Rust manages memory, lets talk about it.
+The rust compiler is very famous because of the error messages it gives, in most of the cases the message will tell you exactly what to do, in this case it is saying that the `let` statement cannot be used in the **global** scope of the program, and this is related to how Rust manages memory, lets talk about it.
 
 ## RAII
 
-To avoid memory leaking the program must gree all the space used in memory, there are languages where you need to manually manage it by calling `delete x` for example, and on the other hand there are languages where there is a Garbage Collector, a procedure that run from time to time and cleans up unused values from the memory.
+To avoid memory leaking the program must free all the space used in memory, there are languages where you need to manually manage it by calling `delete x` for example, and on the other hand there are languages where there is a Garbage Collector, a procedure that run from time to time and cleans up unused values from the memory.
 
-Rust takes a different approach knows as RAII, this is a pattern that has been created on the C++ community and is integrated in the Rust typing system, so Rust needs to know where the variable has been acquired so it knows where the variable needs to be cleaned from the memory, this is related to a thing called OBRM that is an extension over the RAII pattern, lets see how it works.
+Rust takes a different approach known as **RAII**, this is a pattern that has been created on the `C++` community and is integrated in the Rust typing system, so Rust needs to know where the variable has been **acquired** (declared) so it also knows the **lifetime end** of the variable which is where the variable needs to be cleaned from the memory, this is related to a thing called **OBRM** (Ownership & Borrowing Resource Management) that is an extension over the RAII pattern, lets see how it works.
+
+We can only use `let` to define variables inside the scope of functions.
 
 ```rust
 fn main() {
-	// First, let statement can be used only inside the function
-	// scopt
+	// First, let statement can be used only inside the function scope
 	let x = 5; // Here lifetime of x starts (it has been acquired)
-	           // In rust we say that x is the owner of 5
-	           // this will soon make sense to you
+	           // In rust we say that `x is the owner of the value 5`
+
 	// .. more code ..
 
-} // when the function goes out of scope, when the invokarion returns
+} // when the function goes out of scope, when the invokation returns
   // all the variables acquired in the lifetime of the function are
   // cleaned from the memory.
 ```
 
+> NOTE: In the above case we are defining a primitive type, stores in
+> the stack memory, so it is cleaned when the function stack frame is
+> poped out, for dynamic types Rust will call a drop method to clean it.
+
 ## Unused variables
 
 Executing this simple program will give us warnings in the console
-those warnings will not block the compilation, but is highly recommended to read it because compiler will try to teach you
-what to do to make your program better.
+those warnings will not block the compilation, but is highly recommended to read it because compiler will try to teach you what to do to make your program better.
 
-[warning] `unused variable x`
+```
+--> src/main.rs:3:9
+  |
+7 |     let x = 5;
+  |         ^ help: if this is intentional, prefix it with an underscore: `_x`
+
+```
+
+You can add `_` as a prefix so compiler ignores the unused variable or add `#![allow(unused_variables)]` annotation to the top of the function, however I don't recommend silencing the warnings during learning experience.
 
 
 ## Type inference
 
-So you probably heard that Rust is a static typed language, it means that the compiler must know the type of each variable during compilation time, and in our example we have not specified a type.
+So you probably heard that Rust is a static typed language, it means that the compiler must know the type of each variable during compilation time, and in our example `let x = 5;`  we have not specified a type.
 
-Rust can infer the type of the variable based on the structure or the
-context where we define it, in this case the parser will detect that the 5 literal is a valid integer and in this case the type `i32` will be the default choice, we can specify other type if we want `let x: i8 = 5;`
+Rust can infer the type of the variable based on the literal, structure or the
+context where we define it, in this case the parser will detect that the `5` literal is a valid integer and in this case the type `i32` will be the default choice, we can specify other type if we want `let x: i8 = 5;`
 
 ## Printing numbers
 
-We can print to stdout using println! which is a macro, similar to function in the usage but does pre-compilation magic for us.
+We can print to stdout using `println!` which is a macro, similar to function in the usage but does pre-compilation magic for us.
 
 ```rust
 println!("Hello");
@@ -110,7 +131,7 @@ dbg!(x); // print for debugging
 
 ## Mutability
 
-So lets say we have this simple code
+So lets say we have this simple code.
 
 ```rust
 let x = 5;
@@ -121,15 +142,55 @@ x = x * 2;
 println!("{x}");
 ```
 
-[error] mutability - put mut keyword on let
+```rust
+error[E0384]: cannot assign twice to immutable variable `x`
+ --> src/main.rs:8:5
+  |
+7 |     let x = 5;
+  |         -
+  |         |
+  |         first assignment to `x`
+  |         help: consider making this binding mutable: `mut x`
+8 |     x = 2;
+  |     ^^^^^ cannot assign twice to immutable variable
+```
 
-[warning] Assign operator -
-the compiler will keep trying to teach us how to make our program
-better and in this case it is saying that we can use `x *= 2;` operator.
+All variables in Rust are by default immutable, so we need to declare
+our variables as mutable when we need it.
+
+```rust
+let mut x = 5;
+println!("{x}");
+
+x = x * 2;  // now we can mutate
+println!("{x}");
+```
+
+The code compiles without error, however if we run `cargo clippy` (a tool for linting) we gonna see a suggestion.
+
+```rust
+warning: manual implementation of an assign operation
+ --> src/main.rs:8:5
+  |
+8 |     x = x * 2;
+  |     ^^^^^^^^^ help: replace it with: `x *= 2`
+
+```
+
+To make our code better `clippy` teaches us to replace it with the
+more idiomatic version.
+
+```rust
+let mut x = 5;
+println!("{x}");
+
+x *= 2;
+println!("{x}");
+```
 
 ## Strong Typing
 
-Variable mutability is simple, however Rust ensures what we call strong typing, that means if the variable has started with a type, in our case an integer,  we can only mutate to the same type, Rust will not perform coercion automatically.
+Variable mutability is simple, however Rust ensures striong typing, that means if the variable has started with a type, in our case an integer,  we can only mutate to the same type, Rust will not perform coercion automatically.
 
 ```rust
 let mut x: i8 = 5;
@@ -138,7 +199,17 @@ x = "Data Umbrella";  // mutate to a string value
 println!("{}", x);
 ```
 
-[error] Mismatched types
+```rust
+error[E0308]: mismatched types
+ --> src/main.rs:8:9
+  |
+7 |     let mut x = 5;
+  |                 - expected due to this value
+8 |     x = "Data Umbrella";
+  |         ^^^^^^^^^^^^^^^ expected integer, found `&str`
+```
+
+We can mutate only to the same type.
 
 ## Shadowing
 
@@ -154,9 +225,18 @@ let x = "Data Umbrella";  // `let` here shadows previous variable
 println!("{}", x);
 ```
 
-Now it works because the second x will replace the first and its type from the beginning will be a string.
+Now it works because the second x will replace the first and its type from the beginning will be a string, the compiler will still give us a warning as we don't need the unnecessary `mut` anymore.
 
-[warning] Compiler warns us about the `mut` not needed anymore.
+```rust
+warning: variable does not need to be mutable
+ --> src/main.rs:7:9
+  |
+7 |     let mut x = 5;
+  |         ----^
+  |         |
+  |         help: remove this `mut`
+
+```
 
 ## Scopes
 
@@ -166,11 +246,16 @@ VAriable shadowing also works with enclosing scopes, we can create a new scope l
 fn main() {
     let x: i8 = 5;   // `x` on the main scope defined here
     println!("{x}"); // value 5 is printed
+
     {
         let x = x * 10;    // `x` on the new scope defined here
+                           // this `x` is pushed to the top of the stack
         println!("{}", x); // value 50 printed
+
     }  // the inner x is dropped from stack here
+
     println!("{x}");  // now `x` is back to the value 5
+
 }  // `x` is cleaned up here
 ```
 
@@ -179,6 +264,7 @@ The inner scope can be also made by a function or a closure.
 ## Constants
 
 There is one kind of variable that can be declared on the global scope, it is used to hold values that never changes during the runtime.
+
 ```rust
 const SECONDS_IN_MINUTE: u16 = 60;
 ```
@@ -190,10 +276,14 @@ const SECONDS_IN_MINUTE: u16 = 60;
 - It is written using UPPER_SNAKE_CASE style
 
 ```rust
-let minutes = 5; // from dynamic input
+let minutes = 5; // from dynamic input for example
 let total = minutes * SECONDS_IN_MINUTE;
 println!("there are {total} seconds in {minutes} minutes");
 ```
+
+Constants doesn´t have a fixed memory location, constants are
+`inlined` with the program binary.
+
 
 ## Data Types
 
@@ -224,12 +314,12 @@ Lets take a look on some details of it.
 | 128  | i128   | u128     |
 | arch | isize  | usize    | <- vary on platform arch
 
-#### signed
+#### Signed range
 range:  -(2ⁿ⁻¹) até 2ⁿ⁻¹ - 1
 
 i8: -128 até 127  [-(2⁷) até 2⁷ - 1]
 
-#### unsigned
+#### Unsigned range
 range: 0 até 2ⁿ - 1
 
 u8: 0 até 255 [0 até 2⁸ -1]
@@ -238,11 +328,11 @@ u8: 0 até 255 [0 até 2⁸ -1]
 
 `let x = 5;  // inferred i32`
 
-#### Typing
+#### Explicit Typing
 
 ```rust
 let x: u8 = 10;
-let x: 10_u8;
+let x: 10_u8;  // also works
 ```
 
 #### Overflow
@@ -256,7 +346,12 @@ let y: u8 = x - 20;
             ^^^^^^ attempt to compute `10_u8 - 20_u8`, which would overflow
 ```
 
+In the case above, 10 - 20 will result in a negative value and `u8` is unsigned and cannot store values below 0.
+
+
 #### Literals
+
+There are ways to prefix literals to represent other numerical bases.
 
 | Literal        | Example     |
 |----------------|-------------|
@@ -271,30 +366,40 @@ let y: u8 = x - 20;
 Tuples are the basic compound type for us to aggregate multiple values in a single variable.
 
 - can store different types
-- HAs a fixed size
+- Has a fixed size at compilation time
+- The type is defined by its structure
 
 ```rust
 let tup = (1, 3, 3);
+
 // type defined by structure
 let tup: (i32, i32, i32) = (1, 2, 3);
 let tup: (i32, f64, bool) = (1, 2.2, true);
+
 // Access via dot notation
-tup.1, tup.2, tup.3
+// tup.1, tup.2, tup.3
+println!("The second element is {}", tup.1);
 ```
 
-All rust assignments are based on pattern match, so the left side reprensets a pattern that right side must match, this works this way for every assignment, but on tuples we can use it to do destructuring which is very useful.
+All Rust assignments are based on pattern match, so the left side represents a pattern that right side must match, this works this way for every assignment, and on tuples we can use it to do destructuring which is very useful.
 
 ```rust
-let (a, b, c) = tup
+let tup = (1, 3, 3);
+let (a, b, c) = tup;
+println!("{a} - {b} - {c}");
 ```
 
 ### Array
 
-Array is a sequence of elements of the same type.
+Array is a sequence of elements of the same type and with a fixed size.
 
 ```rust
 let array: [i32;4] = [1, 2, 3, 4];
+
+// access by index on square brackets
 array[0]
+
+// can be sliced
 &array[1..];
 ```
 
@@ -321,27 +426,32 @@ When we need to form words and phrases we gonna need to chain those chars togeth
 
 Rust has 2 types of string, and this is sometimes confusing when you are starting with Rust.
 
-The first type is called String Literal, which is defined when we create a string literally by enclosing it in double quotes.
+The first type is called **String Literal**, which is defined when we create a string literally by enclosing it in double quotes.
 
 ```rust
 let name = "Bruno";
-// Rust internally will store this in the static memory region
-// and as we don't have a pointer with a defined size for that memory
-// Rust will also create a reference for us, so when using it
-// we will name it `String Slice` or just `str` for short.
+```
 
+> Rust internally will store this in the static memory region
+> and as we don't have a pointer with a defined size for that memory
+> Rust will also create a reference for us, so when using it
+> we will name it `String Slice` or just `str` for short.
+
+```rust
 let name: &str = "Bruno";
 ```
 
 ## Dynamic string
 
-The other type is the Dynamic String, which is defined by the `String` type (capital S) and this defined a vector (which is a dynamic array) holding the characters for the string and allows mutability and is stored on the heap memory, so whenever we need a string that changes in size and content dynamically we use this one
+The other type is the Dynamic String, which is defined by the `String` type (capital S) and this defined as a vector (which is a dynamic array) holding the characters for the string and allows mutability and is stored on the heap memory, so whenever we need a string that changes in size and content dynamically we use this one
 
-The most common way to create a string like this is by doing.
+The most common way to create a string like this is by doing:
 
 ```rust
 let name = "Bruno".to_string();
 // inference will be name: String
+// same as
+let name: String = "Bruno".to_string();
 ```
 
 There are other ways for achieving the same.
@@ -354,14 +464,17 @@ String::from("Bruno") // Same as "Bruno".to_string()
 This kind of string is useful when we want to read input from the user.
 
 ```rust
-let mut name = String::new();  // static method call
+let mut name = String::new();  // creates an empty String
+
 name.push_str("Hello");
 name.push_str(" ");
 name.push_str("Bruno");
+
 println!("{name}");
 ```
 
-Notes on size
+Notice that when getting the size of a string you are actually getting
+the size in bytes.
 
 ```rust
 let symbols = "🦀😃";
@@ -374,10 +487,17 @@ println!("{}", symbols.chars().count()); // 2
 Lets create a program that reads user input from the console, user will
 type a number and we will compare with a random generated number.
 
-Disclaimer: We gonna do it incrementally, so I will start by doing very
-wrong things and then resolve it while I explain the solution.
+> Disclaimer: We gonna do it incrementally, so I will start by doing very
+> wrong things, get errors on terminal
+>  and then resolve it while I explain the solution.
 
-`cargo new guess_game`
+Start by creating a new project:
+
+```bash
+cd ..
+cargo new guess_game
+cd guess_game
+```
 
 Lets edit the `src/main.rs` file and start organizing our program using functions.
 
@@ -392,7 +512,7 @@ fn read_user_input(s: String) {
 ```
 
 Ok, this function doesn't do much right now we gonna implement in a second,
-you can see that above the function I added a comment with `///` 3 forward slashes, this is the Rust doc comment, and it accepts markdown formatting.
+you can see that above the function I added a comment with `///` 3 forward slashes, this is the Rust **doc comment**, and it accepts markdown formatting.
 
 Inside the function I uses `//` 2 slashes and this is a regular comment.
 
@@ -412,7 +532,19 @@ fn main() {
 This seems very straightforward, something we can easily do in most of
 the programming languages, however this doesn't work in Rust, lets understand.
 
-[error] Borrowed after move
+```rust
+error[E0382]: borrow of moved value: `guess`
+ --> src/main.rs:9:26
+  |
+7 |     let guess = String::new();      // start an empty String
+  |         ----- move occurs because `guess` has type `String`, which does not implement the `Copy` trait
+8 |     read_user_input(guess);         // call our function passing the String
+  |                     ----- value moved here
+9 |     println!("You typed {guess}");  // print back the number typed
+  |                          ^^^^^ value borrowed here after move
+
+
+```
 
 Lets understand the problem:
 
@@ -426,24 +558,39 @@ Lets understand the problem:
   doesn't have a `null` pointer, so it is impossible to use `guess` on the
   println! statement.
 
-So the first rule of Rust Ownership: Every value can have a single owner,
-however we can give the value as an explicit borrow instead of giving ownership. To borrow a value the function must take it as a reference and
+So the first rule of Rust Ownership: **Every value can have a single owner**
+
+However we can give the value as an explicit borrow instead of giving ownership.
+To borrow a value the function must take it as a reference and
 we can do that by simply addiing & on the function argument and in the
 function calling.
 
 ```rust
-fn read_user_input(s: &String)  // receives a borrow
-...
-read_user_input(&guess);     // passes a borrowed / reference
-println!("You guessed {guess}");  // we can still use `guess` here
-// notice: the println! macro will take guess as a borrow automatically
-// so we don't need to use &guess in that case.
+fn read_user_input(s: &String) {  // receives a borrow
 ```
 
-Ok, now it compiles without errors, only warnings because our code is not doing anything yet, and on the terminal we are not printing any number because
+```
+read_user_input(&guess);     // passes a borrowed / reference
+println!("You guessed {guess}");  // we can still use `guess` here
+```
+
+> NOTE: the println! macro will take guess as a borrow automatically so we
+> don't need to use &guess in that case.
+
+Ok, now it compiles without errors, only warnings because our code is not doing
+anything yet, and on the terminal we are not printing any number because
 the string is still empty.
 
-Lets read user input
+```rust
+warning: unused variable: `s`
+ --> src/main.rs:1:20
+  |
+1 | fn read_user_input(s: &String) {
+  |                    ^ help: if this is intentional, prefix it with an underscore: `_s`
+
+```
+
+Lets make something useful and read user input.
 
 To read user input we gonna use the std lib module `io`
 
@@ -452,29 +599,43 @@ To read user input we gonna use the std lib module `io`
 use std::io;
 
 // Inside the read_user_input
-
-let input = io::stdin();  // acquire the user input
-input.read_line(s);       // read what user types in
-                          // and add the contents to `s`
+fn read_user_input(s: &String) {
+    let input = io::stdin();  // acquire the user input
+    input.read_line(s);       // read what user types in into `s`
+}
 
 ```
 
-We gonna have another error and compiler will again help us
-to resolve the problem:
+We gonna have another error and compiler will again help us to resolve the problem:
 
-[error] mismatched types, mutability
+```rust
+error[E0308]: mismatched types
+   --> src/main.rs:7:21
+    |
+7   |     input.read_line(s);       // read what user types in into `s`
+    |           --------- ^ types differ in mutability
+    |           |
+    |           arguments to this function are incorrect
+```
 
 You remember that every variable in Rust is immutable, so we need to manually
 specify that we want it to be mutable not only on its definition by also
 on every place it is referenced.
 
+First on the function signature:
+
 ```rust
 fn read_user_input(s: &mut String)
+```
+
+And then in the main function
+
+```rust
 let mut guess = String::new();
 read_user_input(&mut guess);
 ```
 
-There are still warnings to be resolved but the code now works
+There are still warnings to be resolved but the code now works without errors:
 
 ```rust
 Guess the Number
@@ -484,12 +645,21 @@ You guessed 55
 
 Lets fix some warnings before we continue,
 
-[warning] unused result
+```rust
+warning: unused `Result` that must be used
+ --> src/main.rs:7:5
+  |
+7 |     input.read_line(s);       // read what user types in into `s`
+  |     ^^^^^^^^^^^^^^^^^^^
 
-When we call `input.read_line` rust returns an instance of the `Result` type, which is an Enum that has 2 possible values identified by the variants `Ok` and `Err`, as Rust doesn´t have `null` type, neither exception throwing it
-uses sum types (also known as monadic types) and when calling functions
-most of the times we get our return wrapped in a `Result` object, then
-we need to `unwrap` it and see if it is an `Ok` or an `Err`.
+```
+
+When we call `input.read_line` rust returns an instance of the `Result` type,
+which is an Enum that has 2 possible values identified by the
+variants `Ok` and `Err`, as Rust doesn´t have `null` type,
+neither exception throwing it uses sum types (also known as monadic types)
+and when calling functions most of the times we get our return wrapped in a
+`Result` object, then we need to `unwrap` it and see if it is an `Ok` or an `Err`.
 
 Lets make our Function more rustic in some refactorings.
 
@@ -499,7 +669,7 @@ contain the size in bytes that has been read from the terminal.
 ```rust
 fn read_user_input(s: &mut String) -> io::Result<usize> {
     let input = io::stdin();
-    return input.read_line(s); // unneeded
+    return input.read_line(s);
 }
 ```
 
@@ -507,6 +677,13 @@ Notice that we can use the `return` statement to return from functions,
 however rust preferably takes an expressive style, inspired by FP
 the latest expression on a function will be its return value,
 so we can remove the `return` and also the `;`
+
+```rust
+fn read_user_input(s: &mut String) -> io::Result<usize> {
+    let input = io::stdin();
+    input.read_line(s)
+}
+```
 
 Now we have another warning on the main function where we called
 saying that we are taking a Result that may/or not have an error
@@ -529,10 +706,8 @@ fn main() {
 }
 ```
 
-[style] Fix it
-
 The program is fully working, no errors, no warnings, however it is not so
-`rustic` yet, we can adjust the styling.
+`rustic` yet, we can adjust the styling to make it more idiomatic.
 
 ## Combinators
 
@@ -590,6 +765,7 @@ fn main() {
     println!("Guess the Number");
     let number = rand::thread_rng().gen_range(1..=100);
     println!("The secret number is: {number}");  // we can remove later
+    ...
 
 ```
 
@@ -637,7 +813,10 @@ The data user types in the terminal is read in to a `String` we created
 the randon generated number is an `u32`, lets try making our `y` to be
 a String `let y = String::from("Hello");`
 
-[error][E0277]: can't compare `{integer}` with `String`
+```rust
+error[E0277]: can't compare `{integer}` with `String`
+ --> src/main.rs:7:10
+```
 
 ## Type casting
 
@@ -677,9 +856,11 @@ You guessed 45
 Too low!
 ```
 
-## cargo clippy is a linter
+If we run `cargo clippy` the linter, we gonna see a suggestion
 
+```
 [warning] `if` chain can be rewritten with `match`
+```
 
 ## Match
 
@@ -780,28 +961,63 @@ Remove the line
 ```
 
 
-Play
+## The complete game:
 
-
-## Bonus
-
-- cargo watch (cargo watch -x run)
-- irust
-- Struct
-
+`src/main.rs`
 ```rust
-struct Animal {
-    name: String,
-    colors: Vec<String>
-}
+use rand::Rng;
+use std::cmp::Ordering;
+use std::io; // NEW
 
+fn main() {
+    println!("Guess the Number");
+    let number = rand::thread_rng().gen_range(1..=100);
+    // println!("The secret number is: {number}");
 
-impl Animal {
-    fn new(name: &str) -> Self {
-        Self {name: name.to_string(), colors: vec![]}
+    loop {
+        let mut guess = String::new();
+        io::stdin().read_line(&mut guess).expect("Error happened");
+
+        let guess: u32 = match guess.trim().parse() {
+            Ok(num) => num,
+            Err(_) => {
+                println!("Invalid number");
+                continue;
+            }
+        };
+        println!("You guessed {guess}");
+        // NEW
+        match guess.cmp(&number) {
+            Ordering::Less => println!("Too small!"),
+            Ordering::Greater => println!("Too big!"),
+            Ordering::Equal => {
+                println!("Congratulations!");
+                break;
+            }
+        }
     }
 }
 ```
 
-- Enum
-- Trait
+```console
+$ cargo run
+   Compiling guess_game v0.1.0 (/home/rochacbruno/Projects/rust-intro/guess_game)
+    Finished dev [unoptimized + debuginfo] target(s) in 0.37s
+     Running `target/debug/guess_game`
+Guess the Number
+50
+You guessed 50
+Too small!
+75
+You guessed 75
+Too small!
+90
+You guessed 90
+Too small!
+95
+You guessed 95
+Too small!
+99
+You guessed 99
+Congratulations!
+```
